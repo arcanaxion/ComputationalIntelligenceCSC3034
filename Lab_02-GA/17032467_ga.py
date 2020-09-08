@@ -109,12 +109,50 @@ def crossover(parents):
 
 def mutate(chromosome, p_mutation):
     # this function mutates each gene of a chromosome based on the mutation probability
-    chromosome = value2gray(chromosome)
-    inverted_bit = '1' if chromosome[-1] == '0' else '0'
-    mutated = chromosome[:-1] + inverted_bit
+    chromosome_gray = value2gray(chromosome)
+    inverted_bit = '1' if chromosome_gray[-1] == '0' else '0'
+    mutated_gray = chromosome_gray[:-1] + inverted_bit
+    mutated = gray2value(mutated_gray)
     if (random.random() < p_mutation):
         return mutated
     return chromosome
 
-if __name__ == "__main__":
+def findOverallDistance(chromosomes):
+    # this function takes the input of the current population and returns the overall 
+    # distance among fitnesses of all chromosomes
+    mean = sum(chromosomes)/len(chromosomes)
+    overall_distance = sum([abs(mean - chromos) for chromos in chromosomes])
+    return overall_distance
+
+if __name__ == "test":
     print(mutate(15, 0.1))
+
+
+if __name__ == "__main__":
+    # main function
+    ## parameter definition
+    pop_size = 10
+    pop_min = 1 #1cm
+    pop_max = 10 #10cm
+    curr_iter = 0
+    max_iter = 100
+    min_overalldistance = 0.5
+    p_mutation = 0.05
+    ## initialise population
+    population = []
+    population.append(generatePopulation(pop_size, pop_min, pop_max))
+    while (curr_iter < max_iter and findOverallDistance(population[-1]) > min_overalldistance):
+        curr_iter += 1
+        ## select parent pairs
+        parents = selectParents(population[-1], len(population[-1]))
+        ## perform crossover
+        offsprings = []
+        for p in parents:
+            new_offsprings = crossover(p)
+            for o in new_offsprings:
+                offsprings.append(o)
+        ## perform mutation
+        mutated = [mutate(offspring, p_mutation) for offspring in offsprings]
+        ## update current population
+        population.append(mutated)
+    print(population)
